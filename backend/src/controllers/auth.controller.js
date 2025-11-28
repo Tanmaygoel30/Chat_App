@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/user.model");
 const { generateToken } = require("../lib/utils");
+const cloudinary = require("../lib/cloudinary");
 
 exports.signup = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -103,6 +104,39 @@ exports.logout = (req, res) => {
   }
 };
 
-exports.updateProfilePic = (req,res) => {
+exports.updateProfilePic = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
 
+    const userId = req.user._id;
+
+    if (!profilePic) {
+      return res.status(400).json({ message: "Profile picture is required" });
+    }
+
+    const udpatedPic = await cloudinary.uploader.upload(profilePic);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        profilePic: udpatedPic.secure_url,
+      },
+      { new: true }
+    );
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.log("Error in updating profile pic ", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.checkAuth = async (req, res) => {
+  try{
+    res.status(200).json(req.user);
+  } 
+  catch (err) {
+    console.log("Error in checking auth ", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 }
