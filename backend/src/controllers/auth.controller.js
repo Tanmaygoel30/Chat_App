@@ -53,6 +53,7 @@ exports.signup = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
+  console.log(req.body);
   const { email, password } = req.body;
 
   try {
@@ -132,11 +133,10 @@ exports.updateProfilePic = async (req, res) => {
 };
 
 exports.checkAuth = async (req, res) => {
-  try{
+  try {
     res.status(200).json(req.user);
-  } 
-  catch (err) {
+  } catch (err) {
     console.log("Error in checking auth ", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};

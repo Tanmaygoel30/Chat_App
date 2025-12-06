@@ -1,12 +1,51 @@
-import React from 'react'
+import React, { useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import SignupPage from "./pages/SignupPage";
+import LoginPage from "./pages/LoginPage";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
+import { axiosInstance } from "./lib/axios";
+import { useDispatch, useSelector } from "react-redux";
+import { check } from "./lib/utils";
+import { checkAuth } from "./features/auth/authSlice";
 
 const App = () => {
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await check();
+
+        if (res) dispatch(checkAuth(res));
+      } catch (error) {
+        console.log(error.message);
+      }
+    })();
+  }, []);
+
   return (
     <div>
-      Hello World
-      <button className="btn btn-primary">Test DaisyUI</button>
+      <Routes>
+        <Route
+          path="/"
+          element={isAuthenticated ? <HomePage /> : <LoginPage />}
+        />
+        <Route
+          path="/signup"
+          element={!isAuthenticated ? <SignupPage /> : <HomePage />}
+        />
+        <Route
+          path="/login"
+          element={!isAuthenticated ? <LoginPage /> : <HomePage />}
+        />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
     </div>
   );
-}
+};
 
-export default App
+export default App;
