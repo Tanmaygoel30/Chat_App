@@ -70,7 +70,7 @@ const SignUpPage = () => {
                   </svg>
                   <input
                     type="text"
-                    {...register("name", {
+                    {...register("fullName", {
                       required: true,
                       pattern: "[A-Za-z][A-Za-z0-9-]*",
                       minLength: "3",
