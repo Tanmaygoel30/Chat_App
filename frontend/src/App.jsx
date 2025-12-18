@@ -41,8 +41,14 @@ const App = () => {
           path="/login"
           element={!isAuthenticated ? <LoginPage /> : <HomePage />}
         />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route
+          path="/profile"
+          element={isAuthenticated ? <ProfilePage /> : <LoginPage />}
+        />
+        <Route
+          path="/settings"
+          element={isAuthenticated ? <SettingsPage /> : <LoginPage />}
+        />
       </Routes>
     </div>
   );

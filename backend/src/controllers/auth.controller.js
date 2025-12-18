@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user.model");
 const { generateToken } = require("../lib/utils");
 const cloudinary = require("../lib/cloudinary");
+const streamifier = require("streamifier");
 
 exports.signup = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -106,20 +107,27 @@ exports.logout = (req, res) => {
 
 exports.updateProfilePic = async (req, res) => {
   try {
-    const { profilePic } = req.body;
-
     const userId = req.user._id;
 
-    if (!profilePic) {
+    if (!req.file) {
       return res.status(400).json({ message: "Profile picture is required" });
     }
 
-    const udpatedPic = await cloudinary.uploader.upload(profilePic);
+    // Upload buffer to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream((error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      });
+
+      // Send image buffer to Cloudinary
+      streamifier.createReadStream(req.file.buffer).pipe(stream);
+    });
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        profilePic: udpatedPic.secure_url,
+        profilePic: result.secure_url,
       },
       { new: true }
     );

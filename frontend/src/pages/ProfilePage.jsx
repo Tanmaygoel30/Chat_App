@@ -1,13 +1,40 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import { axiosInstance } from "../lib/axios";
+import { useEffect } from "react";
 
 const ProfilePage = () => {
   const [isHidden, setIsHidden] = useState(true);
   const user = useSelector((state) => state.auth.user);
+  const [pic, setPic] = useState(null);
+
+  useEffect(() => {
+    if (user?.profilePic) setPic(user?.profilePic);
+  }, [user?.profilePic]);
 
   function openPic() {
     setIsHidden(false);
   }
+
+  function closePic() {
+    setIsHidden(true);
+  }
+
+  async function changePic(e) {
+    try {
+      const newPic = e.target.files[0];
+
+      const formData = new FormData();
+      formData.append("image", newPic);
+
+      const res = await axiosInstance.put("/auth/update-profilePic", formData);
+
+      setPic(res.data.profilePic);
+    } catch (err) {
+      console.log("Profile Pic Upload error: ", err.message);
+    }
+  }
+
   return (
     <div className="h-screen pt-20">
       <div className="max-w-2xl mx-auto p-4 py-8">
@@ -22,45 +49,42 @@ const ProfilePage = () => {
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
               <img
-                src="../public/avatar.png"
+                src={pic || "/avatar.png"}
                 alt="ProfilePic"
                 className="size-32 rounded-full object-cover border-3"
                 onClick={openPic}
               />
-              {/* <label
-                htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200"
-              >
-                // <Camera className="w-5 h-5 text-base-200" />
-                <input
-                  type="file"
-                  id="avatar-upload"
-                  className="hidden"
-                  accept="image/*"
-                  // onChange={handleImageUpload}
-                  // disabled={isUpdatingProfile}
-                />
-              </label> */}
             </div>
-            {/* <p className="text-sm text-zinc-400">
-              {isUpdatingProfile
-                ? "Uploading..."
-                : "Click the camera icon to update your photo"}
-            </p> */}
 
             <div
-              className={`size-50 absolute border ${
-                isHidden ? "hidden" : ""
+              className={`size-70 absolute border transition-all duration-300 ease-out ${
+                isHidden
+                  ? "opacity-0 scale-70 pointer-events-none"
+                  : "opacity-100 scale-100"
               } overflow-hidden`}
             >
-              <div className="flex items-center justify-end px-2 bg-zinc-400">
-                <button>Edit</button>
+              <div className="flex items-center justify-end gap-4 bg-zinc-400">
+                <div>
+                  <label htmlFor="upload-avatar">
+                    Edit
+                    <input
+                      type="file"
+                      id="upload-avatar"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => changePic(e)}
+                    />
+                  </label>
+                </div>
+                <button className="p-2 bg-red-500" onClick={closePic}>
+                  X
+                </button>
               </div>
-              <div>
+              <div className="size-full bg-black">
                 <img
-                  src="../public/avatar.png"
+                  src={pic || "/avatar.png"}
                   alt="ProfilePic"
-                  className="object-contain"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </div>
