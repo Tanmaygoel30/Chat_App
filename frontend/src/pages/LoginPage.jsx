@@ -1,19 +1,22 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../features/auth/authSlice";
+import { login, loginStart } from "../features/auth/authSlice";
 import { useForm } from "react-hook-form";
 import { axiosInstance } from "../lib/axios";
+import Loader from "../components/Loader";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
+  const isLoggingIn = useSelector((state) => state.auth.isLoggingIn);
 
   const { register, handleSubmit } = useForm();
 
   async function handleLogin(data) {
     try {
+      dispatch(loginStart());
       const res = await axiosInstance.post("/auth/login", data);
 
       dispatch(login(res.data));
@@ -23,7 +26,9 @@ const LoginPage = () => {
     }
   }
 
-  return (
+  return isLoggingIn ? (
+    <Loader />
+  ) : (
     <div className="min-h-screen flex justify-center items-center">
       <div className="w-full flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
-import { signup } from "../features/auth/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { signup, signUpStart } from "../features/auth/authSlice";
 import { axiosInstance } from "../lib/axios";
+import Loader from "../components/Loader";
 
 const SignUpPage = () => {
   const { register, handleSubmit } = useForm();
@@ -11,8 +12,11 @@ const SignUpPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const isSigningUp = useSelector((state) => state.auth.isSigningUp);
+
   async function handleSignup(data) {
     try {
+      dispatch(signUpStart());
       const res = await axiosInstance.post("/auth/signup", data);
 
       dispatch(signup(res.data));
@@ -22,7 +26,9 @@ const SignUpPage = () => {
     }
   }
 
-  return (
+  return isSigningUp ? (
+    <Loader />
+  ) : (
     <div className="min-h-screen flex justify-center items-center">
       <div className="w-full flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
