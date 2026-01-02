@@ -1,6 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedUser } from "../features/users/usersSlice";
+import { Cancel01Icon } from "hugeicons-react";
 
 const ChatHeader = () => {
   const dispatch = useDispatch();
@@ -12,9 +13,10 @@ const ChatHeader = () => {
         <div className="flex items-center gap-3">
           {/* Avatar */}
           <div className="avatar">
-            <div className="size-10 rounded-full relative">
+            <div className="size-10 rounded-full border-2 overflow-hidden">
               <img
                 src={selectedUser?.profilePic || "/avatar.png"}
+                className="w-full h-full object-cover"
                 alt={selectedUser?.fullName}
               />
             </div>
@@ -32,7 +34,7 @@ const ChatHeader = () => {
           onClick={() => dispatch(setSelectedUser(null))}
           className="bg-red-500 p-2"
         >
-          {/* <X /> */}x
+          <Cancel01Icon size={20} />
         </button>
       </div>
     </div>

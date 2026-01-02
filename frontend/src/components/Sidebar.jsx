@@ -33,7 +33,7 @@ const Sidebar = () => {
             <div className="size-10 rounded-full border-2 overflow-hidden shrink-0">
               <img
                 src={user.profilePic || "/avatar.png"}
-                className="object-cover"
+                className="w-full h-full object-cover"
                 alt="profilePic"
               />
             </div>

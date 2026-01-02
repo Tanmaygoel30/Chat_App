@@ -115,10 +115,13 @@ exports.updateProfilePic = async (req, res) => {
 
     // Upload buffer to Cloudinary
     const result = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream((error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      });
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "chatApp" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
 
       // Send image buffer to Cloudinary
       streamifier.createReadStream(req.file.buffer).pipe(stream);

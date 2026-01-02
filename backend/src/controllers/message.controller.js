@@ -1,5 +1,7 @@
 const User = require("../models/user.model");
 const Message = require("../models/message.model");
+const cloudinary = require("../lib/cloudinary");
+const streamifier = require("streamifier");
 
 exports.getUsers = async (req, res) => {
   try {
@@ -36,7 +38,7 @@ exports.getMessages = async (req, res) => {
           receiverId: myId,
         },
       ],
-    });
+    }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);
   } catch (err) {
@@ -47,15 +49,26 @@ exports.getMessages = async (req, res) => {
 
 exports.sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
-
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
-    let imageUrl;
-    if (image) {
-      const uploadedImage = await cloudinary.uploader.upload(image);
-      imageUrl = uploadedImage.secure_url;
+    let text = req.body?.text || "";
+    let imageUrl = "";
+
+    if (req.file) {
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "chatApp" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+
+      imageUrl = result.secure_url;
     }
 
     const newMessage = new Message({
