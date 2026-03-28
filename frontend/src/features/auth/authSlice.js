@@ -1,10 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { io } from "socket.io-client";
 
 const initialState = {
   user: null,
   isAuthenticated: false,
   isLoggingIn: false,
   isSigningUp: false,
+  socket: null,
 };
 
 export const authSlice = createSlice({
@@ -35,11 +37,29 @@ export const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
     },
+    connectSocket: (state) => {
+      if (!state.user || state.socket) return;
+
+      const socket = io("http://localhost:5001", {
+        query: {
+          userId: state.user._id,
+        },
+      });
+      socket.connect();
+      state.socket = socket;
+    },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { checkAuth, loginStart, login, signUpStart, signup, logout } =
-  authSlice.actions;
+export const {
+  checkAuth,
+  loginStart,
+  login,
+  signUpStart,
+  signup,
+  logout,
+  connectSocket,
+} = authSlice.actions;
 
 export default authSlice.reducer;

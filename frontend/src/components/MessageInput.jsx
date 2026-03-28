@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { axiosInstance } from "../lib/axios";
-import { getChats } from "../features/users/usersSlice";
+import { addMessage, getChats } from "../features/users/usersSlice";
 import { Album02Icon } from "hugeicons-react";
 import { CancelCircleIcon } from "hugeicons-react";
 
@@ -13,10 +13,29 @@ const MessageInput = () => {
   const chats = useSelector((state) => state.user.chats);
   const user = useSelector((state) => state.auth.user);
   const [preview, setPreview] = useState(null);
+  const socket = useSelector((state) => state.auth.socket);
+  const msgEndRef = useRef(null);
 
   useEffect(() => {
     getMsgs();
+    scrollToBottom();
   }, [selectedUser]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("new message", (message) => {
+      dispatch(addMessage(message));
+    });
+
+    return () => {
+      socket.off("new message");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chats]);
 
   async function getMsgs() {
     const id = selectedUser?._id;
@@ -34,15 +53,20 @@ const MessageInput = () => {
     }
 
     if (data.image) {
-      console.log("Image Inf0: ", data.image[0]);
+      // console.log("Image Inf0: ", data.image[0]);
       formData.append("image", data.image[0]);
     }
 
     const res = await axiosInstance.post(`/message/send/${id}`, formData);
+    dispatch(addMessage(res.data));
 
     setPreview(null);
     reset();
   }
+
+  const scrollToBottom = () => {
+    msgEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <div className="w-full min-h-0 flex-1">
@@ -68,6 +92,7 @@ const MessageInput = () => {
               </div>
             </div>
           ))}
+          <div ref={msgEndRef}></div>
         </div>
         <form
           className="w-full absolute bottom-0 flex items-center gap-2 p-2 bg-base-100"

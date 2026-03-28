@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 const Message = require("../models/message.model");
 const cloudinary = require("../lib/cloudinary");
 const streamifier = require("streamifier");
+const { io, userSocketMap } = require("../lib/socket");
 
 exports.getUsers = async (req, res) => {
   try {
@@ -9,7 +10,7 @@ exports.getUsers = async (req, res) => {
 
     // show all users except me
     const users = await User.find({ _id: { $ne: loggedInUserId } }).select(
-      "-passworrd"
+      "-passworrd",
     );
 
     res.status(200).json(users);
@@ -62,7 +63,7 @@ exports.sendMessage = async (req, res) => {
           (error, result) => {
             if (error) reject(error);
             else resolve(result);
-          }
+          },
         );
 
         streamifier.createReadStream(req.file.buffer).pipe(stream);
@@ -78,6 +79,12 @@ exports.sendMessage = async (req, res) => {
       image: imageUrl,
     });
     await newMessage.save();
+
+    const receiverSocketId = userSocketMap[receiverId];
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("new message", newMessage);
+    }
 
     res.status(201).json(newMessage);
   } catch (err) {

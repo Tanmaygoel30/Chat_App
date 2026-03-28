@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { login, loginStart } from "../features/auth/authSlice";
+import { connectSocket, login, loginStart } from "../features/auth/authSlice";
 import { useForm } from "react-hook-form";
 import { axiosInstance } from "../lib/axios";
 import Loader from "../components/Loader";
@@ -20,6 +20,7 @@ const LoginPage = () => {
       const res = await axiosInstance.post("/auth/login", data);
 
       dispatch(login(res.data));
+      dispatch(connectSocket());
       navigate("/");
     } catch (error) {
       alert(error.response?.data?.message);

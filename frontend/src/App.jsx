@@ -8,7 +8,7 @@ import SettingsPage from "./pages/SettingsPage";
 import { axiosInstance } from "./lib/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { check } from "./lib/utils";
-import { checkAuth } from "./features/auth/authSlice";
+import { checkAuth, connectSocket } from "./features/auth/authSlice";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -20,6 +20,7 @@ const App = () => {
         const res = await check();
 
         if (res) dispatch(checkAuth(res));
+        dispatch(connectSocket());
       } catch (error) {
         console.log(error.message);
       }
